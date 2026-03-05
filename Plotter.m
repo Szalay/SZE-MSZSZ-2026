@@ -71,11 +71,12 @@ classdef Plotter < handle
 			xlabel("Független változó, {\itx}", FontSize=16);
 			ylabel("Függvényérték", FontSize=16);
 			
+			% Az x vektor közös
+			x = linspace(this.Interval(1), this.Interval(2), this.PointCount);
+				
 			lines = zeros(length(this.Functions), 1);
 			notations = "";
 			for i = 1:length(this.Functions)
-				x = linspace(this.Interval(1), this.Interval(2), this.PointCount);
-				
 				f = this.Functions{i};
 				lines(i) = plot(x, f(x), this.LineStyles{i}, LineWidth=3);
 				
