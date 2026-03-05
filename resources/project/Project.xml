@@ -40,6 +40,13 @@
                 </Category>
             </Info>
         </File>
+        <File Location="simple_plot_example.m">
+            <Info>
+                <Category UUID="FileClassCategory">
+                    <Label UUID="design"/>
+                </Category>
+            </Info>
+        </File>
     </Files>
     <Info Location="ProjectData">
         <Info Name="SZE-MSZSZ-2026"/>
