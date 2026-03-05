@@ -33,6 +33,13 @@
         <File Location=".gitignore">
             <Info/>
         </File>
+        <File Location="MSZSZ_01.m">
+            <Info>
+                <Category UUID="FileClassCategory">
+                    <Label UUID="design"/>
+                </Category>
+            </Info>
+        </File>
     </Files>
     <Info Location="ProjectData">
         <Info Name="SZE-MSZSZ-2026"/>
