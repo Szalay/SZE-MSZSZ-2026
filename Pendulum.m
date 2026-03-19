@@ -98,13 +98,19 @@ classdef Pendulum < handle
 			
 			subplot(2, 1, 1);
 			hold on; grid on; box on;
-			title("Szögsebesség");
+			title("Az inga szögsebessége", FontSize=18);
+			xlabel("Idő, {\itt} (s)", FontSize=16);
+			ylabel("Szögsebesség, {\it\omega} (rad/s)", FontSize=16);
+			
 			plot(this.t, this.x(:, 1), LineWidth=3);
 			
 			subplot(2, 1, 2);
 			hold on; grid on; box on;
-			title("Szöghelyzet");
-			plot(this.t, this.x(:, 2), LineWidth=3);
+			title("Az inga szöghelyzete", FontSize=18);
+			xlabel("Idő, {\itt} (s)", FontSize=16);
+			ylabel("Szöghelyzet, {\itφ} (°)", FontSize=16);
+			
+			plot(this.t, rad2deg(this.x(:, 2)), LineWidth=3);
 		end
 		
 	end
