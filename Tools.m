@@ -11,6 +11,12 @@ classdef Tools
 			hold on; box on; grid on;
 		end
 		
+		function [x, y] = Circle(r)
+			phi = deg2rad(0:5:360);
+			x = r*cos(phi);
+			y = r*sin(phi);
+		end
+		
 	end
 	
 end

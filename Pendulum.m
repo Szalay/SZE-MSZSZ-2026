@@ -113,6 +113,111 @@ classdef Pendulum < handle
 			plot(this.t, rad2deg(this.x(:, 2)), LineWidth=3);
 		end
 		
+		function Animate(this)
+			Window = Tools.Figure(Name="Az ingamozgás animációja");
+			
+			Title = title("Az ingamozgás animációja", FontSize=18);
+			
+			xlabel("Vízszintes hely, {\itx} (m)", FontSize=16);
+			ylabel("Függőleges hely, {\ity} (m)", FontSize=16);
+			
+			% Az ábrázolt síkrész
+			axis equal;
+			xlim(1.5*this.L*[-1, 1]);
+			ylim(this.L*[-1.75, 0.25]);
+			
+			% Fal
+			Wall = plot(1.25*this.L*[-1, 1], [0, 0], "k-", LineWidth=3);
+			
+			% Az inga szára
+			x_R = this.L*sin(this.phi_0);
+			y_R = -this.L*cos(this.phi_0);
+			Rod = plot( ...
+				[0, x_R], [0, y_R], ...
+				"k-", LineWidth=2 ...
+				);
+			
+			% Csukló
+			[x_J, y_J] = Tools.Circle(0.015);
+			Joint = patch( ...
+				XData=x_J, YData=y_J, ...
+				FaceColor=[1, 1, 1], EdgeColor=[0, 0, 0], ...
+				LineWidth=1 ...
+				);
+			
+			% Az inga feje
+			[x_H0, y_H0] = Tools.Circle(this.D/2);
+			x_H = x_H0 + x_R;
+			y_H = y_H0 + y_R;
+			Head = patch( ...
+				XData=x_H, YData=y_H, ...
+				FaceColor=[0.25, 0.5, 0.75], EdgeColor=[0, 0, 0], ...
+				LineWidth=1 ...
+				);
+			
+			% Súly
+			forceScale = 1/40;
+			Weight = plot( ...
+				x_R + [0, 0], y_R + [0, -forceScale*this.m*Pendulum.g], ...
+				"r", LineWidth=2 ...
+				);
+			
+			% Sebesség, v = r × omega
+			velocityScale = 1/5;
+			v_x0 = this.L*this.omega_0*cos(this.phi_0);
+			v_y0 = this.L*this.omega_0*sin(this.phi_0);
+			Velocity = plot( ...
+				x_R + [0, velocityScale*v_x0], ...
+				y_R + [0, velocityScale*v_y0], ...
+				"b", LineWidth=2 ...
+				);
+			VelocityLabel = text( ...
+				x_R + velocityScale*v_x0, y_R + velocityScale*v_y0, ...
+				"$$\vec{v}$$", Interpreter="latex", FontSize=16, Color=[0, 0, 1] ...
+				);
+			
+			
+			for i = 1:length(this.t)
+				if ~ishandle(Window)
+					break;
+				end
+				
+				Title.String = strrep(sprintf( ...
+					"Az ingamozgás animációja, t = %.1f s", this.t(i) ...
+					), ".", ",");
+				
+				omega = this.x(i, 1);
+				phi = this.x(i, 2);
+				
+				x_R = this.L*sin(phi);
+				y_R = -this.L*cos(phi);
+				
+				Rod.XData = [0, x_R];
+				Rod.YData = [0, y_R];
+				
+				x_H = x_H0 + x_R;
+				y_H = y_H0 + y_R;
+				
+				Head.XData = x_H;
+				Head.YData = y_H;
+				
+				Weight.XData = x_R + [0, 0];
+				Weight.YData = y_R + [0, -forceScale*this.m*Pendulum.g];
+				
+				v_x = this.L*omega*cos(phi);
+				v_y = this.L*omega*sin(phi);
+				Velocity.XData = x_R + [0, velocityScale*v_x];
+				Velocity.YData = y_R + [0, velocityScale*v_y];
+				
+				VelocityLabel.Position = [ ...
+					x_R + velocityScale*v_x, y_R + velocityScale*v_y ...
+					];
+				
+				drawnow;
+				pause(20e-3);
+			end
+		end
+		
 	end
 	
 	methods (Static)
@@ -121,10 +226,12 @@ classdef Pendulum < handle
 			inga = Pendulum( ...
 				L=1, m=2, B=0.5, ...
 				phi_0=deg2rad(45), ...
+				omega_0=2, ...
 				t=0:20e-3:25 ...
 				);
 			inga.Simulate();
-			inga.Plot();
+			%inga.Plot();
+			inga.Animate();
 		end
 		
 	end
