@@ -5,6 +5,11 @@ classdef Pendulum < handle
 		% Az inga méretei
 		m;
 		L;
+		D;
+		
+		% A veszteségek jellemzői
+		B;			% Forgási súrlódási együttható, Nms/rad
+		c_W;
 		
 		% Kezdeti értékek
 		omega_0;
@@ -18,12 +23,14 @@ classdef Pendulum < handle
 	% Függő tulajdonságok
 	properties (Dependent)
 		J;
+		A;
 		x_0;
 	end
 	
 	% Állandó tulajdonságok
 	properties (Constant)
-		g = 9.81;	% N/kg
+		g = 9.81;		% N/kg
+		rho_L = 1.2;	% kg/m^3
 	end
 	
 	methods
@@ -31,7 +38,10 @@ classdef Pendulum < handle
 		function this = Pendulum(Settings)
 			arguments
 				Settings.m(1, 1) {mustBePositive}
-				Settings.L(1, 1) {mustBePositive}
+				Settings.L(1, 1) {mustBePositive} = 1;
+				Settings.D(1, 1) {mustBePositive} = 0.1;
+				Settings.B(1, 1) {mustBeNonnegative} = 0;
+				Settings.c_W(1, 1) {mustBeNonnegative} = 0.47;
 				Settings.omega_0(1, 1) = 0;
 				Settings.phi_0(1, 1) = 0;
 				Settings.t(:, 1)
@@ -39,6 +49,10 @@ classdef Pendulum < handle
 			
 			this.m = Settings.m;
 			this.L = Settings.L;
+			this.D = Settings.D;
+			this.B = Settings.B;
+			this.c_W = Settings.c_W;
+			
 			this.omega_0 = Settings.omega_0;
 			this.phi_0 = Settings.phi_0;
 			
@@ -47,6 +61,10 @@ classdef Pendulum < handle
 		
 		function J = get.J(this)
 			J = this.m*this.L^2;
+		end
+		
+		function A = get.A(this)
+			A = this.D^2*pi/4;
 		end
 		
 		function x_0 = get.x_0(this)
@@ -59,7 +77,11 @@ classdef Pendulum < handle
 			omega = x(1);
 			phi = x(2);
 			
-			domegadt = 1/this.J*(-this.m*Pendulum.g*this.L*sin(phi));
+			domegadt = 1/this.J*( ...
+				-this.m*Pendulum.g*this.L*sin(phi) ... % M_G
+				-this.B*omega ... % M_S
+				-1/2*this.c_W*Pendulum.rho_L*this.A*this.L^2*omega^2*sign(omega) ... % M_L
+				);
 			dphidt = omega;
 			
 			dxdt = [domegadt; dphidt];
@@ -90,7 +112,11 @@ classdef Pendulum < handle
 	methods (Static)
 		
 		function Run()
-			inga = Pendulum(L=1, m=2, phi_0=deg2rad(45), t=0:20e-3:10);
+			inga = Pendulum( ...
+				L=1, m=2, B=0.5, ...
+				phi_0=deg2rad(45), ...
+				t=0:20e-3:25 ...
+				);
 			inga.Simulate();
 			inga.Plot();
 		end
