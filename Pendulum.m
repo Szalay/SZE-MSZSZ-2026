@@ -113,6 +113,7 @@ classdef Pendulum < handle
 			plot(this.t, rad2deg(this.x(:, 2)), LineWidth=3);
 		end
 		
+		% Animáció
 		function Animate(this)
 			Window = Tools.Figure(Name="Az ingamozgás animációja");
 			
@@ -157,25 +158,30 @@ classdef Pendulum < handle
 			
 			% Súly
 			forceScale = 1/40;
-			Weight = plot( ...
-				x_R + [0, 0], y_R + [0, -forceScale*this.m*Pendulum.g], ...
-				"r", LineWidth=2 ...
+			Weight = Vector2D( ...
+				Label="$$m \vec{g}$$", Color="r", Scale=forceScale, ...
+				A=[x_R; y_R], B=[0; -this.m*Pendulum.g] ...
 				);
 			
-			% Sebesség, v = r × omega
+			% Sebesség, \vec{v} = \vec{omega} × \vec{r}
 			velocityScale = 1/5;
-			v_x0 = this.L*this.omega_0*cos(this.phi_0);
-			v_y0 = this.L*this.omega_0*sin(this.phi_0);
-			Velocity = plot( ...
-				x_R + [0, velocityScale*v_x0], ...
-				y_R + [0, velocityScale*v_y0], ...
-				"b", LineWidth=2 ...
-				);
-			VelocityLabel = text( ...
-				x_R + velocityScale*v_x0, y_R + velocityScale*v_y0, ...
-				"$$\vec{v}$$", Interpreter="latex", FontSize=16, Color=[0, 0, 1] ...
+			v_x0 = this.omega_0*this.L*cos(this.phi_0);
+			v_y0 = this.omega_0*this.L*sin(this.phi_0);
+			Velocity = Vector2D( ...
+				Label="$$\vec{v}$$", Color="b", Scale=velocityScale, ...
+				A=[x_R; y_R], B=[v_x0; v_y0] ...
 				);
 			
+			% Gyorsulás, \vec{a} = \vec{\beta} × \vec{r} + \vec{omega} × \vec{v}
+			accelerationScale = 0.1;
+			dxdt_0 = this.Model(0, this.x_0);
+			beta = dxdt_0(1);
+			a_x0 = beta*this.L*cos(this.phi_0) - v_y0*this.omega_0;
+			a_y0 = beta*this.L*sin(this.phi_0) + v_x0*this.omega_0;
+			Acceleration = Vector2D( ...
+				Label="$$\vec{a}$$", Color="g", Scale=accelerationScale, ...
+				A=[x_R; y_R], B=[a_x0; a_y0] ...
+				);
 			
 			for i = 1:length(this.t)
 				if ~ishandle(Window)
@@ -201,17 +207,24 @@ classdef Pendulum < handle
 				Head.XData = x_H;
 				Head.YData = y_H;
 				
-				Weight.XData = x_R + [0, 0];
-				Weight.YData = y_R + [0, -forceScale*this.m*Pendulum.g];
+				% Súlyvektor
+				Weight.Update(A=[x_R; y_R]);
+				% WeightLabel.Position = [ ...
+				% 	x_R + 0.05*forceScale*this.m*Pendulum.g, ...
+				% 	y_R - 0.5*forceScale*this.m*Pendulum.g ...
+				% 	];
 				
+				% Sebességvektor
 				v_x = this.L*omega*cos(phi);
 				v_y = this.L*omega*sin(phi);
-				Velocity.XData = x_R + [0, velocityScale*v_x];
-				Velocity.YData = y_R + [0, velocityScale*v_y];
+				Velocity.Update(A=[x_R; y_R], B=[v_x; v_y]);
 				
-				VelocityLabel.Position = [ ...
-					x_R + velocityScale*v_x, y_R + velocityScale*v_y ...
-					];
+				% Gyorsulásvektor
+				dxdt = this.Model(0, this.x(i, :)');
+				beta = dxdt(1);
+				a_x = beta*this.L*cos(phi) - v_y*omega;
+				a_y = beta*this.L*sin(phi) + v_x*omega;
+				Acceleration.Update(A=[x_R; y_R], B=[a_x; a_y]);
 				
 				drawnow;
 				pause(20e-3);
