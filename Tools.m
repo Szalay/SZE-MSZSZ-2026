@@ -17,6 +17,22 @@ classdef Tools
 			y = r*sin(phi);
 		end
 		
+		function [coefficient, prefix] = OrderOfMagnitude(v)
+			if v >= 1
+				coefficient = 1;
+				prefix = "";
+			elseif v >= 1e-3
+				coefficient = 1000;
+				prefix = "m";
+			elseif v >= 1e-6
+				coefficient = 1e6;
+				prefix = "μ";
+			else
+				coefficient = 1e9;
+				prefix = "n";
+			end
+		end
+		
 	end
 	
 end
