@@ -243,8 +243,8 @@ classdef Pendulum < handle
 				t=0:20e-3:25 ...
 				);
 			inga.Simulate();
-			%inga.Plot();
-			inga.Animate();
+			inga.Plot();
+			%inga.Animate();
 		end
 		
 	end

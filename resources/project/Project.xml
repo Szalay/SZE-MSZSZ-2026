@@ -103,6 +103,27 @@
                 </Category>
             </Info>
         </File>
+        <File Location="SL_0.slx">
+            <Info>
+                <Category UUID="FileClassCategory">
+                    <Label UUID="design"/>
+                </Category>
+            </Info>
+        </File>
+        <File Location="Inga.slx">
+            <Info>
+                <Category UUID="FileClassCategory">
+                    <Label UUID="design"/>
+                </Category>
+            </Info>
+        </File>
+        <File Location="Tekercs.slx">
+            <Info>
+                <Category UUID="FileClassCategory">
+                    <Label UUID="design"/>
+                </Category>
+            </Info>
+        </File>
     </Files>
     <Info Location="ProjectData">
         <Info Name="SZE-MSZSZ-2026"/>
