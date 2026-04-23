@@ -1,4 +1,4 @@
-classdef Pendulum < handle
+classdef PendulumWithWall < handle
 	%PENDULUM Inga
 	
 	properties
@@ -10,6 +10,9 @@ classdef Pendulum < handle
 		% A veszteségek jellemzői
 		B;			% Forgási súrlódási együttható, Nms/rad
 		c_W;
+		
+		% Fal
+		W;
 		
 		% Kezdeti értékek
 		omega_0;
@@ -35,10 +38,11 @@ classdef Pendulum < handle
 	
 	methods
 		
-		function this = Pendulum(Settings)
+		function this = PendulumWithWall(Settings)
 			arguments
 				Settings.m(1, 1) {mustBePositive}
 				Settings.L(1, 1) {mustBePositive} = 1;
+				Settings.W(1, 1) = -0.5;
 				Settings.D(1, 1) {mustBePositive} = 0.1;
 				Settings.B(1, 1) {mustBeNonnegative} = 0;
 				Settings.c_W(1, 1) {mustBeNonnegative} = 0.47;
@@ -52,6 +56,8 @@ classdef Pendulum < handle
 			this.D = Settings.D;
 			this.B = Settings.B;
 			this.c_W = Settings.c_W;
+			
+			this.W = Settings.W;
 			
 			this.omega_0 = Settings.omega_0;
 			this.phi_0 = Settings.phi_0;
@@ -78,18 +84,42 @@ classdef Pendulum < handle
 			phi = x(2);
 			
 			domegadt = 1/this.J*( ...
-				-this.m*Pendulum.g*this.L*sin(phi) ... % M_G
+				-this.m*PendulumWithWall.g*this.L*sin(phi) ... % M_G
 				-this.B*omega ... % M_S
-				-1/2*this.c_W*Pendulum.rho_L*this.A*this.L^2*omega^2*sign(omega) ... % M_L
+				-1/2*this.c_W*PendulumWithWall.rho_L*this.A*this.L^2*omega^2*sign(omega) ... % M_L
 				);
 			dphidt = omega;
 			
 			dxdt = [domegadt; dphidt];
 		end
 		
+		function [value, isterminal, direction] = WallDetection(this, ~, x)
+			phi = x(2);
+			value = this.W - this.L*sin(phi);
+			isterminal = 1;
+			direction = 0;
+		end
+		
 		% Szimuláció
 		function Simulate(this)
-			[this.t, this.x] = ode45(@this.Model, this.t, this.x_0);
+			options = odeset(Events=@this.WallDetection);
+			
+			t_span = [this.t(1), this.t(end)];
+			this.t = [];
+			x_0 = this.x_0;
+			
+			while isempty(this.t) || (this.t(end) ~= t_span(2))
+				[t_i, x_i] = ode45(@this.Model, t_span, x_0, options);
+				
+				this.t = [this.t; t_i];
+				this.x = [this.x; x_i];
+				
+				% Visszafordítás
+				x_0 = [-this.x(end, 1); this.x(end, 2)];
+				
+				% A fennmaradó idő
+				t_span(1) = this.t(end);
+			end
 		end
 		
 		% Ábrázolás
@@ -127,8 +157,9 @@ classdef Pendulum < handle
 			xlim(1.5*this.L*[-1, 1]);
 			ylim(this.L*[-1.75, 0.25]);
 			
-			% Fal
+			% Falak
 			Wall = plot(1.25*this.L*[-1, 1], [0, 0], "k-", LineWidth=3);
+			Obstacle = plot(this.W*[1, 1], -this.L*[0.5, 1], "k-", LineWidth=3);
 			
 			% Az inga szára
 			x_R = this.L*sin(this.phi_0);
@@ -160,7 +191,7 @@ classdef Pendulum < handle
 			forceScale = 1/40;
 			Weight = Vector2D( ...
 				Label="$$m \vec{g}$$", Color="r", Scale=forceScale, ...
-				A=[x_R; y_R], B=[0; -this.m*Pendulum.g] ...
+				A=[x_R; y_R], B=[0; -this.m*PendulumWithWall.g] ...
 				);
 			
 			% Sebesség, \vec{v} = \vec{omega} × \vec{r}
@@ -236,7 +267,7 @@ classdef Pendulum < handle
 	methods (Static)
 		
 		function Run()
-			inga = Pendulum( ...
+			inga = PendulumWithWall( ...
 				L=1, m=2, B=0.5, ...
 				phi_0=deg2rad(45), ...
 				omega_0=2, ...
