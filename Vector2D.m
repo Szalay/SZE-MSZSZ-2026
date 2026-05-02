@@ -1,6 +1,7 @@
 classdef Vector2D < handle
 	
 	properties
+		Axes;
 		Label;
 		Arrow;
 		Scale(1, 1) double = 1;
@@ -10,6 +11,7 @@ classdef Vector2D < handle
 		
 		function this = Vector2D(Settings)
 			arguments
+				Settings.Axes(1, 1) = gca
 				Settings.Label(1, 1) string = ""
 				Settings.Scale(1, 1) double = 1
 				Settings.Color = "k"
@@ -17,6 +19,7 @@ classdef Vector2D < handle
 				Settings.B(2, 1) = [1; 1]
 			end
 			
+			this.Axes = Settings.Axes;
 			this.Scale = Settings.Scale;
 			
 			x = Settings.A(1);
@@ -25,11 +28,11 @@ classdef Vector2D < handle
 			u = this.Scale*Settings.B(1);
 			v = this.Scale*Settings.B(2);
 			
-			this.Arrow = quiver( ...
+			this.Arrow = quiver(this.Axes, ...
 				x, y, u, v, ...
 				"off", Color=Settings.Color, LineWidth=2, MaxHeadSize=0.3 ...
 				);
-			this.Label = text( ...
+			this.Label = text(this.Axes, ...
 				x + 0.5*u, y + 0.5*v, Settings.Label, ...
 				Interpreter="latex", FontSize=16, Color=Settings.Color ...
 				);

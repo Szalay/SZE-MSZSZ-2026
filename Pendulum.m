@@ -127,6 +127,9 @@ classdef Pendulum < handle
 			xlim(1.5*this.L*[-1, 1]);
 			ylim(this.L*[-1.75, 0.25]);
 			
+			% Az animáció akadozásának megszünetése
+			set(gca, "PickableParts", "none");
+			
 			% Fal
 			Wall = plot(1.25*this.L*[-1, 1], [0, 0], "k-", LineWidth=3);
 			
@@ -204,7 +207,7 @@ classdef Pendulum < handle
 				x_H = x_H0 + x_R;
 				y_H = y_H0 + y_R;
 				
-				Head.XData = x_H;
+				Head.XData = x_H; % set(Head, "XData", x_H)
 				Head.YData = y_H;
 				
 				% Súlyvektor
